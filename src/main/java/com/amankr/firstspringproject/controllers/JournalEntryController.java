@@ -1,7 +1,9 @@
 package com.amankr.firstspringproject.controllers;
 
 import com.amankr.firstspringproject.entity.JournalEntry;
+import com.amankr.firstspringproject.entity.User;
 import com.amankr.firstspringproject.service.JournalEntryService;
+import com.amankr.firstspringproject.service.UserService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -27,9 +29,11 @@ public class JournalEntryController {
 
     @Autowired
     private JournalEntryService journalEntryService;
+    @Autowired
+    private UserService userService;
 
     @GetMapping
-    public ResponseEntity<?>  getAll(){
+    public ResponseEntity<?>  getAllJournalEntries(){
         try {
             List<JournalEntry> all = journalEntryService.getAll();
             return new ResponseEntity<>(all, HttpStatus.OK);
@@ -38,12 +42,25 @@ public class JournalEntryController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
+    @GetMapping("/{username}")
+    public ResponseEntity<?>  getAllJournalEntriesByUser(@PathVariable String username){
+        try {
+            User user = userService.getUserByUsername(username);
+            List<JournalEntry> all = user.getJournalEntries();
+            return new ResponseEntity<>(all, HttpStatus.OK);
+        } catch (Exception e) {
+            // TODO: handle exception
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
     
-    @PostMapping
-    public ResponseEntity<?> createJounal(@RequestBody JournalEntry myEntry){
+    @PostMapping("{username}")
+    public ResponseEntity<?> createJounal(@RequestBody JournalEntry myEntry, @PathVariable String username){
         try {
             myEntry.setDate(LocalDateTime.now());
-            journalEntryService.saveEntry(myEntry);
+            journalEntryService.saveEntry(myEntry, username);
+
             return new ResponseEntity<>(true, HttpStatus.CREATED);    
         } catch (Exception e) {
             return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
@@ -77,19 +94,19 @@ public class JournalEntryController {
         }
     }
 
-    @PutMapping("/id/{myId}")
-    public ResponseEntity<?> updateJounalById(@PathVariable ObjectId myId, @RequestBody JournalEntry newEntry){
-        try {
-            JournalEntry oldEntry = journalEntryService.getById(myId).orElse(null);
-            if(oldEntry != null){
-                if(newEntry.getTitle() != null) oldEntry.setTitle(newEntry.getTitle());
-                if(newEntry.getContent() != null) oldEntry.setContent(newEntry.getContent());
-            }
-            journalEntryService.saveEntry(oldEntry);
-            return new ResponseEntity<>(oldEntry, HttpStatus.OK);
+    // @PutMapping("/id/{myId}")
+    // public ResponseEntity<?> updateJounalById(@PathVariable ObjectId myId, @RequestBody JournalEntry newEntry){
+    //     try {
+    //         JournalEntry oldEntry = journalEntryService.getById(myId).orElse(null);
+    //         if(oldEntry != null){
+    //             if(newEntry.getTitle() != null) oldEntry.setTitle(newEntry.getTitle());
+    //             if(newEntry.getContent() != null) oldEntry.setContent(newEntry.getContent());
+    //         }
+    //         journalEntryService.saveEntry(oldEntry, user);
+    //         return new ResponseEntity<>(oldEntry, HttpStatus.OK);
     
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
-    }
+    //     } catch (Exception e) {
+    //         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    //     }
+    // }
 }
