@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.amankr.firstspringproject.entity.JournalEntry;
 import com.amankr.firstspringproject.entity.User;
 import com.amankr.firstspringproject.service.UserService;
 
@@ -42,11 +41,12 @@ public class UserController {
         }
     }
 
-    @PutMapping
-    public ResponseEntity<?> updateUser(@RequestBody User user){
+    @PutMapping("/{userName}")
+    public ResponseEntity<?> updateUser(@RequestBody User user, @PathVariable String userName){
         try {
-            User userInDb = userService.getUserByUsername(user.getUsername());
+            User userInDb = userService.getUserByUsername(userName);
             if(userInDb != null){
+                userInDb.setUsername(user.getUsername());
                 userInDb.setPassword(user.getPassword());
                 userService.saveEntry(userInDb);
             }
